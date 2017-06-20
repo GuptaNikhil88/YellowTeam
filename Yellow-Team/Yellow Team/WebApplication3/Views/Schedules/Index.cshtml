@@ -1,0 +1,116 @@
+﻿@model IEnumerable<WebApplication3.Models.Schedule>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+
+@*<p>
+    @Html.ActionLink("Finalize", "Finalize")
+</p>*@
+<table class="table" style= "width:70%">
+    <tr>
+        <th>
+            Reschedule
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.room.Room_Number)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Length)
+        </th>
+        @*<th>
+            @Html.DisplayNameFor(model => model.Priority)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Parent)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.EstimatedCheckin)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.EstimatedCheckout)
+        </th>*@
+        <th>
+            @Html.DisplayNameFor(model => model.CheckIn)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CheckOut)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+
+    <tr>
+        @if (item.CheckedIn == false) { 
+        <td>
+            
+            <a href="@Url.Action("Moveup",new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-circle-arrow-up"></span></a>
+            @* <input type="button" class="glyphicon glyphicon-arrow-up" title="" value="" onclick="location.href='@Url.Action("Moveup", "Schedules", new { id = item.Id })'" />*@
+            <a href="@Url.Action("MoveDown",new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-circle-arrow-down"></span></a>
+        </td>
+        }
+        else
+        {
+            <td>
+                <a class="btn btn-default"><span class="glyphicon glyphicon-circle-arrow-up"></span></a>
+                @* <input type="button" class="glyphicon glyphicon-arrow-up" title="" value="" onclick="location.href='@Url.Action("Moveup", "Schedules", new { id = item.Id })'" />*@
+                <a class="btn btn-default"><span class="glyphicon glyphicon-circle-arrow-down"></span></a>              
+            </td>
+        }
+        <td>
+            @Html.DisplayFor(modelItem => item.room.Room_Number)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Length)
+        </td>
+        @*<td>
+            @Html.DisplayFor(modelItem => item.Priority)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Parent)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.EstimatedCheckin)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.EstimatedCheckout)
+        </td>*@
+        <td>
+            @Html.DisplayFor(modelItem => item.CheckIn)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CheckOut)
+        </td>
+        <td>
+            
+            <a href="@Url.Action("Edit",new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-pencil"></span></a>
+            
+           @* @Html.ActionLink("Details", "Details", new { id = item.Id }) |*@
+            
+            <a href="@Url.Action("Delete",new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-remove-sign"></span></a>
+            @if (item.CheckedIn == false)
+            {
+                <a href="@Url.Action("CheckIn",new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-time"></span></a>
+            }
+            else
+            {
+                if (item.completed == 0)
+                {
+                    <a href="@Url.Action("CheckOut",new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-time"></span></a>
+
+                }
+            }
+            
+            
+        </td>
+    </tr>
+}
+
+</table>
