@@ -216,7 +216,7 @@ namespace WebApplication3.Controllers
                 schedule.Priority = schedule.Priority - schedulepriority.Priority;
                     if (schedulepriority.Priority == 1)
                     {
-                        firstCheckin = schedulepriority.CheckIn;
+                        firstCheckin = schedule.CheckIn;
                     }
                     if (schedule.CheckIn != null | schedule.CheckOut != null) { 
                 TimeScheduling(schedulepriority);
