@@ -9,7 +9,9 @@ namespace WebApplication3.Models
     public class Schedule
     {
         public int Id { get; set; }
-        [Display(Name ="Duration")]
+        [CustomValidation(typeof(Schedule), "durationCheck")]
+        [Display(Name = "Duration")]
+        [Required(AllowEmptyStrings =false, ErrorMessage =("Please enter the appointment duration!"))]
         public int Length { get; set; }
         //[Display(Name ="Parent Present")]
         //public bool Parent { get; set; }
@@ -20,6 +22,7 @@ namespace WebApplication3.Models
         [Display(Name = "In")]
         [DataType(DataType.Time)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString ="{0:hh:mm tt}")]
+        [Required]
         public string CheckIn { get; set; }
         [Display(Name = "Out")]
         [DataType(DataType.Time)]
@@ -33,6 +36,17 @@ namespace WebApplication3.Models
         //public int late { get; set; }
         public virtual int RoomId { get; set; }
         public virtual Rooms room { get; set; }
+
+        public static ValidationResult durationCheck(string length, ValidationContext context)
+        {
+
+            if (Convert.ToInt32(length) < 1)
+            {
+                return new ValidationResult("Duration should be greater than 0.");
+            }
+            else
+                return ValidationResult.Success;
+        }
 
     }
 }
