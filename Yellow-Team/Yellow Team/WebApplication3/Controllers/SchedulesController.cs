@@ -17,7 +17,7 @@ namespace WebApplication3.Controllers
 
         // GET: Schedules
         
-        public ActionResult Index()
+        public ActionResult Index(int? successFlag)
         {
             DateTime d1 = System.DateTime.Now;
             d1 = d1.AddDays(-1);
@@ -28,6 +28,10 @@ namespace WebApplication3.Controllers
             LoadSchedule(previousday);
             }
             var schedules = db.Schedules.Where(s => s.created == Curdate).OrderBy(s=>s.Priority);
+            if(successFlag == 0)
+            {
+                ViewBag.message = "The previous schedule is not checked in yet!";
+            }
             return View(schedules.ToList());
         }
 
@@ -92,9 +96,10 @@ namespace WebApplication3.Controllers
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
             var schedule = db.Schedules.Single(s => s.Id == id);
-            
+            var success = 0;
                 if (validatePreviousCheckin(schedule))
                 {
+                success = 1;
                     schedule.CheckIn = System.DateTime.Now.ToShortTimeString();
                     schedule.CheckedIn = true;
                     db.Entry(schedule).State = EntityState.Modified;
@@ -109,13 +114,18 @@ namespace WebApplication3.Controllers
 
                     
                 }
-            return RedirectToAction("Index");
+            else
+            {
+                success = 0;
+            }
+            return RedirectToAction("Index", new { successFlag = success });
         }
 
     public Boolean validatePreviousCheckin(Schedule schedule)
     {
-        if(schedule.Priority > 1) { 
-        var previousSchedule = db.Schedules.Single(ps => ps.Priority == schedule.Priority - 1);
+            var curDate = System.DateTime.Now.ToShortDateString();
+        if (schedule.Priority > 1) { 
+        var previousSchedule = db.Schedules.Single(ps => ps.Priority == schedule.Priority - 1 & ps.created == curDate );
         if (previousSchedule.CheckedIn == true)
         {
             if (previousSchedule.completed == 0)
@@ -178,7 +188,7 @@ namespace WebApplication3.Controllers
             var schedule = db.Schedules.Single(s => s.Id == id);
             if (schedule.Priority != 1) { 
             var schedulepriority = db.Schedules.Single(sp => sp.Priority == schedule.Priority - 1 && sp.created==Curdate);
-            if(schedulepriority.CheckedIn == false || schedulepriority.completed == 0) { 
+            if(schedulepriority.CheckedIn == false) { 
             if (schedulepriority.Priority == 1)
                 {
                     firstCheckin = schedulepriority.CheckIn;
@@ -205,7 +215,8 @@ namespace WebApplication3.Controllers
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
             var schedule = db.Schedules.Single(s => s.Id == id);
-            var maxpriority = db.Schedules.Max(mp => mp.Priority);
+            var todaysSchedules = db.Schedules.Where(s => s.created == Curdate);
+            var maxpriority = todaysSchedules.Max(mp => mp.Priority);
             if (schedule.Priority != maxpriority) { 
             var schedulepriority = db.Schedules.Single(sp => sp.Priority == schedule.Priority + 1 && sp.created == Curdate);
             if (schedule.Priority != maxpriority & schedulepriority.completed==0)
