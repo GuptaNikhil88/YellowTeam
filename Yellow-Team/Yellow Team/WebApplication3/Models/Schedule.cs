@@ -13,12 +13,6 @@ namespace WebApplication3.Models
         [Display(Name = "Duration")]
         [Required(AllowEmptyStrings =false, ErrorMessage =("Please enter the appointment duration!"))]
         public int Length { get; set; }
-        //[Display(Name ="Parent Present")]
-        //public bool Parent { get; set; }
-        //public string ScheduledCheckIn { get; set; }
-        //public string ScheduledCheckout { get; set; }
-        //public string EstimatedCheckin { get; set; }
-        //public string EstimatedCheckout { get; set; }
         [Display(Name = "In")]
         [DataType(DataType.Time)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString ="{0:hh:mm tt}")]

@@ -80,6 +80,7 @@ namespace WebApplication3.Controllers
             //updateschedule();
         }
 
+        [Authorize(Roles = "Admin")]
         public void updateschedule()
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -92,6 +93,7 @@ namespace WebApplication3.Controllers
             db.SaveChanges();
         }
 
+        [Authorize(Roles = "Admin")]
         public ActionResult CheckIn(int? id)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -144,6 +146,7 @@ namespace WebApplication3.Controllers
             }
             return false;
     }
+        [Authorize(Roles = "Admin")]
         public ActionResult CheckOut(int? id)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -181,7 +184,7 @@ namespace WebApplication3.Controllers
             db.SaveChanges();
             return RedirectToAction("Index");
         }
-
+        [Authorize(Roles = "Admin")]
         public ActionResult Moveup(int? id)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -211,6 +214,7 @@ namespace WebApplication3.Controllers
             }
             return RedirectToAction("Index");
         }
+        [Authorize(Roles = "Admin")]
         public ActionResult MoveDown(int? id)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -247,6 +251,7 @@ namespace WebApplication3.Controllers
             return RedirectToAction("Index");
         }
         // GET: Schedules/Details/5
+        [Authorize(Roles = "Admin")]
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -262,6 +267,8 @@ namespace WebApplication3.Controllers
         }
 
         // GET: Schedules/Create
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
         public ActionResult Create()
         {
             Schedule scheduleNew = new Schedule();
@@ -269,7 +276,7 @@ namespace WebApplication3.Controllers
             var schedules = db.Schedules.Where(sc => sc.created == Curdate);
             List<Rooms> rooms = db.Rooms.OrderBy(rm=>rm.Room_Number).ToList();
             int countHit = 0;
-            int id = 0;
+           // int id = 0;
             List<Rooms> finalRooms = new List<Rooms>();
              
             foreach (Rooms rm in rooms)
@@ -311,6 +318,7 @@ namespace WebApplication3.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Id,Length,CheckIn,RoomId")] Schedule schedule)
         {
@@ -370,6 +378,7 @@ namespace WebApplication3.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         public void TimeSchedulingIN(Schedule schedule)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -423,6 +432,7 @@ namespace WebApplication3.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult Edit([Bind(Include = "Id,Length,CheckIn,RoomId")] Schedule schedule)
         {
             if (ModelState.IsValid)
@@ -445,6 +455,7 @@ namespace WebApplication3.Controllers
         }
 
         // GET: Schedules/Delete/5
+        [Authorize(Roles = "Admin")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
