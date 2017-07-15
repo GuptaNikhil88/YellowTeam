@@ -35,18 +35,18 @@ namespace WebApplication3.Controllers
             return View(schedules.ToList());
         }
 
-        public ActionResult Finalize()
-        {
-            var Curdate = System.DateTime.Now.ToShortDateString();
-            var schedules = db.Schedules.Where(sc => sc.created == Curdate);
-            foreach(Schedule sc in schedules)
-            {
-            //    sc.ScheduledCheckIn = sc.EstimatedCheckin;
-              //  sc.ScheduledCheckout = sc.EstimatedCheckout;
-            }
-            db.SaveChanges();
-            return RedirectToAction("Index", "Schedules");
-        }
+        //public ActionResult Finalize()
+        //{
+        //    var Curdate = System.DateTime.Now.ToShortDateString();
+        //    var schedules = db.Schedules.Where(sc => sc.created == Curdate);
+        //    foreach(Schedule sc in schedules)
+        //    {
+        //    //    sc.ScheduledCheckIn = sc.EstimatedCheckin;
+        //      //  sc.ScheduledCheckout = sc.EstimatedCheckout;
+        //    }
+        //    db.SaveChanges();
+        //    return RedirectToAction("Index", "Schedules");
+        //}
 
         public void LoadSchedule(string pd)
         {
@@ -80,7 +80,7 @@ namespace WebApplication3.Controllers
             //updateschedule();
         }
 
-        [Authorize(Roles = "Admin")]
+     
         public void updateschedule()
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -93,7 +93,7 @@ namespace WebApplication3.Controllers
             db.SaveChanges();
         }
 
-        [Authorize(Roles = "Admin")]
+     
         public ActionResult CheckIn(int? id)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -146,7 +146,7 @@ namespace WebApplication3.Controllers
             }
             return false;
     }
-        [Authorize(Roles = "Admin")]
+     
         public ActionResult CheckOut(int? id)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -173,6 +173,8 @@ namespace WebApplication3.Controllers
             return RedirectToAction("Index");
         }
 
+
+        [Authorize(Roles ="Admin")]
         public ActionResult Clear(int? id)
         {
 
@@ -184,6 +186,8 @@ namespace WebApplication3.Controllers
             db.SaveChanges();
             return RedirectToAction("Index");
         }
+
+
         [Authorize(Roles = "Admin")]
         public ActionResult Moveup(int? id)
         {
@@ -214,6 +218,8 @@ namespace WebApplication3.Controllers
             }
             return RedirectToAction("Index");
         }
+
+
         [Authorize(Roles = "Admin")]
         public ActionResult MoveDown(int? id)
         {
@@ -251,7 +257,8 @@ namespace WebApplication3.Controllers
             return RedirectToAction("Index");
         }
         // GET: Schedules/Details/5
-        [Authorize(Roles = "Admin")]
+        
+
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -268,7 +275,6 @@ namespace WebApplication3.Controllers
 
         // GET: Schedules/Create
         [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
         public ActionResult Create()
         {
             Schedule scheduleNew = new Schedule();
@@ -378,7 +384,7 @@ namespace WebApplication3.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        
         public void TimeSchedulingIN(Schedule schedule)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -407,6 +413,7 @@ namespace WebApplication3.Controllers
         public static int completed;
         public static string created;
         public static int late;
+        [Authorize(Roles ="Admin")]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -432,7 +439,6 @@ namespace WebApplication3.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public ActionResult Edit([Bind(Include = "Id,Length,CheckIn,RoomId")] Schedule schedule)
         {
             if (ModelState.IsValid)
