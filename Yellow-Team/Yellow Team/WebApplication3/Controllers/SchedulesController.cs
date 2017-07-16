@@ -308,6 +308,7 @@ namespace WebApplication3.Controllers
             if(count==0)
             {
                 priority = 1;
+                scheduleNew.CheckIn = "09:00";
               
             }
             else
