@@ -10,6 +10,7 @@ using WebApplication3.Models;
 
 namespace WebApplication3.Controllers
 {
+    [Authorize(Users = "Admin")]
     public class RoomsController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();

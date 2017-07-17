@@ -4,7 +4,7 @@
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
+<h2>Schedules</h2>
 
 <p>
 @if (User.IsInRole("Admin"))
@@ -44,7 +44,9 @@
         <th>
             @Html.DisplayNameFor(model => model.CheckOut)
         </th>
-        <th></th>
+        <th>
+            Status
+        </th>
     </tr>
 
 @foreach (var item in Model) {
@@ -86,12 +88,19 @@
 @if (User.IsInRole("Admin"))
 {
         <td>
-           
+           @if (item.CheckedIn == false)
+           {
+
             <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-pencil"></span></a>
-
-           @* @Html.ActionLink("Details", "Details", new { id = item.Id }) |*@
-
             <a href="@Url.Action("Delete", new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-remove-sign"></span></a>
+           }
+           else
+           {
+            <a class="btn btn-default"><span class="glyphicon glyphicon-pencil"></span></a>
+            <a class="btn btn-default"><span class="glyphicon glyphicon-remove-sign"></span></a>
+           }
+           @* @Html.ActionLink("Details", "Details", new { id = item.Id }) |*@
+                      
             @if (item.CheckedIn == false)
             {
                 <a href="@Url.Action("CheckIn", new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-time"></span></a>
@@ -103,11 +112,25 @@
                     <a href="@Url.Action("CheckOut", new { id = item.Id })" class="btn btn-info"><span class="glyphicon glyphicon-time"></span></a>
 
                 }
+                else
+                {
+                    <a class="btn btn-default"><span class="glyphicon glyphicon-time"></span></a>
+                }
             }
 
             
         </td>
-}else { <td></td>}
+}else { <td>
+        @if(item.CheckedIn == true) {
+            if(item.completed == 0) {
+        <a class="btn btn-warning"><span class="glyphicon glyphicon-dashboard"></span></a>
+            }
+            else
+            {
+                <a class="btn btn-success"><span class="glyphicon glyphicon-dashboard"></span></a>
+            }
+        }
+        </td>}
     </tr>
 }
 

@@ -110,7 +110,7 @@ namespace WebApplication3.Controllers
                                                   .OrderBy(up => up.Priority);
                     foreach (Schedule up in updateschedule)
                     {
-                        TimeSchedulingIN(up);
+                        TimeSchedulingIN(up,false);
                     }
                     db.SaveChanges();
 
@@ -272,7 +272,7 @@ namespace WebApplication3.Controllers
             }
             return View(schedule);
         }
-
+        public static string maxCheckout;
         // GET: Schedules/Create
         [Authorize(Roles = "Admin")]
         public ActionResult Create()
@@ -312,9 +312,10 @@ namespace WebApplication3.Controllers
               
             }
             else
-            { 
-            var schedulepriority = db.Schedules.Where(s=>s.created==Curdate).Max(s=>s.Priority);
+            {
+                var schedulepriority = db.Schedules.Where(s => s.created == Curdate).Max(s => s.Priority);
                 priority = schedulepriority + 1;
+                maxCheckout = db.Schedules.Single(mc => mc.created == Curdate && mc.Priority == schedulepriority).CheckOut;
                 scheduleNew.CheckIn = (db.Schedules.Single(s => s.created == Curdate && s.Priority == schedulepriority).CheckOut);
             }
             
@@ -339,11 +340,17 @@ namespace WebApplication3.Controllers
             schedule.CheckOut = temp.ToShortTimeString();
             //schedule.late = 0;
             //TimeScheduling(schedule);
-            priority = 0;
+            if ((temp < Convert.ToDateTime(maxCheckout) & maxCheckout != null) || temp < Convert.ToDateTime(System.DateTime.Now.ToShortTimeString()))
+            {
+                ModelState.AddModelError("CheckIn", "The CheckIn time should be later than the Checkout time of Previous Schedule or the Current Time.");
+            }
+            
             if (ModelState.IsValid)
             {
                 db.Schedules.Add(schedule);
                 db.SaveChanges();
+                maxCheckout = null;
+                priority = 0;
                 return RedirectToAction("Index");
             }
 
@@ -386,10 +393,10 @@ namespace WebApplication3.Controllers
         }
 
         
-        public void TimeSchedulingIN(Schedule schedule)
+        public void TimeSchedulingIN(Schedule schedule, Boolean editFlag)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
-            if (schedule.completed == 0)
+            if (schedule.completed == 0 && editFlag == false)
             {
                 if(schedule.CheckedIn ==true) { 
                 DateTime temp = Convert.ToDateTime(schedule.CheckIn);
@@ -407,6 +414,14 @@ namespace WebApplication3.Controllers
                 }
                 //db.SaveChanges();
             }
+            if(editFlag == true)
+            {
+                schedule.CheckIn = firstCheckin;
+                DateTime temp = Convert.ToDateTime(schedule.CheckIn);
+                temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
+                schedule.CheckOut = temp.ToShortTimeString();
+                editFlag = false;
+            }
         }
 
         // GET: Schedules/Edit/5
@@ -414,6 +429,7 @@ namespace WebApplication3.Controllers
         public static int completed;
         public static string created;
         public static int late;
+
         [Authorize(Roles ="Admin")]
         public ActionResult Edit(int? id)
         {
@@ -429,8 +445,7 @@ namespace WebApplication3.Controllers
             priority = schedule.Priority;
             completed = schedule.completed;
             created = schedule.created;
-            
-           // late = schedule.late;
+            // late = schedule.late;
             ViewBag.RoomId = new SelectList(db.Rooms, "Id", "Room_Number", schedule.RoomId);
             return View(schedule);
         }
@@ -452,6 +467,14 @@ namespace WebApplication3.Controllers
                 temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
                 schedule.CheckOut = temp.ToShortTimeString();
                 db.Entry(schedule).State = EntityState.Modified;
+                var Curdate = System.DateTime.Now.ToShortDateString();
+                var trailingSchedule = db.Schedules.Where(up => up.Priority == schedule.Priority + 1 & up.created == Curdate);
+                firstCheckin = schedule.CheckOut;
+                foreach (Schedule sc in trailingSchedule)
+                {
+                    TimeSchedulingIN(sc, true);
+                }
+
                 db.SaveChanges();
                 priority = completed = late = 0;
                 created = "";
