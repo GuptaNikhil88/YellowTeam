@@ -14,7 +14,7 @@ namespace WebApplication3.Controllers
     {
         private ApplicationDbContext db = new ApplicationDbContext();
         public static string firstCheckin;
-
+        public static int priority;
         // GET: Schedules
         
         public ActionResult Index(int? successFlag)
@@ -66,8 +66,8 @@ namespace WebApplication3.Controllers
                 NewSchedule.RoomId = ps.RoomId;
                 //NewSchedule.EstimatedCheckin = ps.EstimatedCheckin;
                 //NewSchedule.EstimatedCheckout = ps.EstimatedCheckout;
-                NewSchedule.CheckIn = null;
-                NewSchedule.CheckOut = null;
+                NewSchedule.CheckIn = ps.CheckIn;
+                NewSchedule.CheckOut = ps.CheckOut;
                 NewSchedule.CheckedIn = false;
                 NewSchedule.completed = 0;
                 NewSchedule.created = System.DateTime.Now.ToShortDateString();
@@ -421,15 +421,12 @@ namespace WebApplication3.Controllers
                 temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
                 schedule.CheckOut = temp.ToShortTimeString();
                 editFlag = false;
+                firstCheckin = schedule.CheckOut;
             }
         }
 
         // GET: Schedules/Edit/5
-        public static int priority;
-        public static int completed;
-        public static string created;
-        public static int late;
-
+        public static Schedule interim;
         [Authorize(Roles ="Admin")]
         public ActionResult Edit(int? id)
         {
@@ -438,13 +435,11 @@ namespace WebApplication3.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             Schedule schedule = db.Schedules.Find(id);
+            interim = schedule;
             if (schedule == null)
             {
                 return HttpNotFound();
             }
-            priority = schedule.Priority;
-            completed = schedule.completed;
-            created = schedule.created;
             // late = schedule.late;
             ViewBag.RoomId = new SelectList(db.Rooms, "Id", "Room_Number", schedule.RoomId);
             return View(schedule);
@@ -457,18 +452,22 @@ namespace WebApplication3.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,Length,CheckIn,RoomId")] Schedule schedule)
         {
+            schedule.RoomId = interim.RoomId;
+            schedule.Priority = interim.Priority;
+            schedule.completed = interim.completed;
+            schedule.created = interim.created;
+            // schedule.late = late;
+            DateTime temp = Convert.ToDateTime(schedule.CheckIn);
+            temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
+            schedule.CheckOut = temp.ToShortTimeString();
+            
             if (ModelState.IsValid)
             {
-                schedule.Priority = priority;
-                schedule.completed = completed;
-                schedule.created = created;
-                // schedule.late = late;
-                DateTime temp = Convert.ToDateTime(schedule.CheckIn);
-                temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
-                schedule.CheckOut = temp.ToShortTimeString();
                 db.Entry(schedule).State = EntityState.Modified;
+                sortEditedItems(schedule);
+                db.SaveChanges();
                 var Curdate = System.DateTime.Now.ToShortDateString();
-                var trailingSchedule = db.Schedules.Where(up => up.Priority == schedule.Priority + 1 & up.created == Curdate);
+                var trailingSchedule = db.Schedules.Where(up => up.Priority > schedule.Priority & up.created == Curdate);
                 firstCheckin = schedule.CheckOut;
                 foreach (Schedule sc in trailingSchedule)
                 {
@@ -476,12 +475,13 @@ namespace WebApplication3.Controllers
                 }
 
                 db.SaveChanges();
-                priority = completed = late = 0;
-                created = "";
+                interim = null;
                 return RedirectToAction("Index");
             }
             ViewBag.RoomId = new SelectList(db.Rooms, "Id", "Room_Number", schedule.RoomId);
+            
             return View(schedule);
+
         }
 
         // GET: Schedules/Delete/5
@@ -534,6 +534,36 @@ namespace WebApplication3.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        public void sortEditedItems(Schedule schedule)
+        {
+            var Curdate = System.DateTime.Now.ToShortDateString();
+            var allSchedules = db.Schedules.Where(alls => alls.created == Curdate);
+            foreach(Schedule s in allSchedules)
+            {
+                if(s.CheckedIn == true)
+                {
+                    continue;
+                }
+                else if(s.Id == schedule.Id){
+                    continue;
+                }
+                else
+                {
+                    if (((Convert.ToDateTime(s.CheckIn) < Convert.ToDateTime(schedule.CheckIn) & s.Priority > schedule.Priority) | (Convert.ToDateTime(s.CheckIn) > Convert.ToDateTime(schedule.CheckIn) & s.Priority < schedule.Priority)))
+                    {
+                        s.Priority = s.Priority + schedule.Priority;
+                        schedule.Priority = s.Priority - schedule.Priority;
+                        s.Priority = s.Priority - schedule.Priority;
+                    }else 
+                    {
+                        continue;
+                    }
+                }
+            }
+            db.SaveChanges();
+
         }
     }
 }
