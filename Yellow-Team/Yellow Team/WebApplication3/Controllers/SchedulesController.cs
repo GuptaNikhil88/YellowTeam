@@ -337,7 +337,7 @@ namespace WebApplication3.Controllers
             schedule.CheckedIn = false;
             DateTime temp = Convert.ToDateTime(schedule.CheckIn);
             temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
-            schedule.CheckOut = temp.ToShortTimeString();
+            schedule.CheckOut = temp.ToString("HH:mm");
             //schedule.late = 0;
             //TimeScheduling(schedule);
             if ((temp < Convert.ToDateTime(maxCheckout) & maxCheckout != null) || temp < Convert.ToDateTime(System.DateTime.Now.ToShortTimeString()))
@@ -382,7 +382,7 @@ namespace WebApplication3.Controllers
                 }
                 DateTime temp = Convert.ToDateTime(schedule.CheckIn);
                 temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
-                schedule.CheckOut = temp.ToShortTimeString();
+                schedule.CheckOut = temp.ToString("HH:mm");
                 //DateTime temp1 = Convert.ToDateTime(schedule.ScheduledCheckout);
                 //DateTime temp2 = Convert.ToDateTime(schedule.EstimatedCheckout);
                 //TimeSpan span = temp2.Subtract(temp1);
@@ -401,7 +401,7 @@ namespace WebApplication3.Controllers
                 if(schedule.CheckedIn ==true) { 
                 DateTime temp = Convert.ToDateTime(schedule.CheckIn);
                 temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
-                schedule.CheckOut = temp.ToShortTimeString();
+                schedule.CheckOut = temp.ToString("HH:mm");
                 }
                 
                 else
@@ -410,7 +410,7 @@ namespace WebApplication3.Controllers
                     schedule.CheckIn = previousschedule.CheckOut;
                     DateTime temp = Convert.ToDateTime(schedule.CheckIn);
                     temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
-                    schedule.CheckOut = temp.ToShortTimeString();
+                    schedule.CheckOut = temp.ToString("HH:mm");
                 }
                 //db.SaveChanges();
             }
@@ -419,7 +419,7 @@ namespace WebApplication3.Controllers
                 schedule.CheckIn = firstCheckin;
                 DateTime temp = Convert.ToDateTime(schedule.CheckIn);
                 temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
-                schedule.CheckOut = temp.ToShortTimeString();
+                schedule.CheckOut = temp.ToString("HH:mm");
                 editFlag = false;
                 firstCheckin = schedule.CheckOut;
             }
@@ -459,20 +459,24 @@ namespace WebApplication3.Controllers
             // schedule.late = late;
             DateTime temp = Convert.ToDateTime(schedule.CheckIn);
             temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
-            schedule.CheckOut = temp.ToShortTimeString();
-            
+            schedule.CheckOut = temp.ToString("HH:mm");
+            var allSchedules = db.Schedules.Where(alls => alls.created == schedule.created).OrderBy(all => all.Priority);
+            //if(invalidCheckInAndCheckout(schedule, allSchedules))
+            //{
+            //    ModelState.AddModelError("CheckIn", "Time Period is overlapping with other schedules, adjust the Length or CheckIn of your Schedule.");
+            //}
             if (ModelState.IsValid)
             {
                 db.Entry(schedule).State = EntityState.Modified;
-                sortEditedItems(schedule);
+                sortEditedItems(schedule, allSchedules);
                 db.SaveChanges();
                 var Curdate = System.DateTime.Now.ToShortDateString();
                 var trailingSchedule = db.Schedules.Where(up => up.Priority > schedule.Priority & up.created == Curdate);
                 firstCheckin = schedule.CheckOut;
-                foreach (Schedule sc in trailingSchedule)
-                {
-                    TimeSchedulingIN(sc, true);
-                }
+                //foreach (Schedule sc in trailingSchedule)
+                //{
+                //    TimeSchedulingIN(sc, true);
+                //}
 
                 db.SaveChanges();
                 interim = null;
@@ -536,10 +540,10 @@ namespace WebApplication3.Controllers
             base.Dispose(disposing);
         }
 
-        public void sortEditedItems(Schedule schedule)
+        public void sortEditedItems(Schedule schedule, IOrderedQueryable<Schedule> allSchedules)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
-            var allSchedules = db.Schedules.Where(alls => alls.created == Curdate);
+            
             foreach(Schedule s in allSchedules)
             {
                 if(s.CheckedIn == true)
@@ -551,19 +555,49 @@ namespace WebApplication3.Controllers
                 }
                 else
                 {
-                    if (((Convert.ToDateTime(s.CheckIn) < Convert.ToDateTime(schedule.CheckIn) & s.Priority > schedule.Priority) | (Convert.ToDateTime(s.CheckIn) > Convert.ToDateTime(schedule.CheckIn) & s.Priority < schedule.Priority)))
+                    if ((Convert.ToDateTime(s.CheckIn) > Convert.ToDateTime(schedule.CheckIn) & s.Priority < schedule.Priority))
                     {
                         s.Priority = s.Priority + schedule.Priority;
                         schedule.Priority = s.Priority - schedule.Priority;
                         s.Priority = s.Priority - schedule.Priority;
-                    }else 
+                        schedule = s;
+                    }else if(Convert.ToDateTime(s.CheckIn) < Convert.ToDateTime(schedule.CheckIn) & s.Priority > schedule.Priority)
+                    {
+                        s.Priority = s.Priority + schedule.Priority;
+                        schedule.Priority = s.Priority - schedule.Priority;
+                        s.Priority = s.Priority - schedule.Priority;
+                        
+
+                    }
+                    else
                     {
                         continue;
                     }
                 }
             }
+            db.Entry(schedule).State = EntityState.Modified;
             db.SaveChanges();
-
+      
         }
+
+        public Boolean invalidCheckInAndCheckout(Schedule schedule, IOrderedQueryable<Schedule> allSchedules)
+        {
+            foreach(Schedule s in allSchedules)
+            {
+                if (Convert.ToDateTime(schedule.CheckIn) >= Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckIn) < Convert.ToDateTime(s.CheckOut))
+                {
+                    return true;
+                }
+                if (Convert.ToDateTime(schedule.CheckOut) > Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckOut) <= Convert.ToDateTime(s.CheckOut))
+                {
+                    return true;
+                }
+                
+                
+            }
+            db.Entry(schedule).State = EntityState.Modified;
+            return false;
+        }
+
     }
 }

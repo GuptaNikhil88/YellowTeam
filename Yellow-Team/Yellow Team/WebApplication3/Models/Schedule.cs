@@ -15,12 +15,12 @@ namespace WebApplication3.Models
         public int Length { get; set; }
         [Display(Name = "In")]
         [DataType(DataType.Time)]
-        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString ="{0:hh:mm tt}")]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString ="{0:HH:mm}")]
         [Required]
         public string CheckIn { get; set; }
         [Display(Name = "Out")]
         [DataType(DataType.Time)]
-        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:hh:mm tt}")]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:HH:mm}")]
         public string CheckOut { get; set; }
         public int Priority { get; set; }
         public string created { get; set; }
