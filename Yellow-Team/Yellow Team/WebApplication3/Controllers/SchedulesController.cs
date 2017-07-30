@@ -136,6 +136,7 @@ namespace WebApplication3.Controllers
                     if (previousSchedule.completed == 0)
                     {
                         previousSchedule.CheckOut = System.DateTime.Now.ToShortTimeString();
+                        previousSchedule.Length = int.Parse((Convert.ToDateTime(previousSchedule.CheckOut).Subtract(Convert.ToDateTime(previousSchedule.CheckIn))).TotalMinutes.ToString());
                         previousSchedule.completed = 1;
                         db.Entry(previousSchedule).State = EntityState.Modified;
                         db.SaveChanges();
@@ -419,8 +420,11 @@ namespace WebApplication3.Controllers
 
                 else
                 {
-                    var previousschedule = db.Schedules.Single(up => up.Priority == schedule.Priority - 1 & up.created == Curdate);
-                    schedule.CheckIn = previousschedule.CheckOut;
+                    if (schedule.Priority != 1)
+                    {
+                        var previousschedule = db.Schedules.Single(up => up.Priority == schedule.Priority - 1 & up.created == Curdate);
+                        schedule.CheckIn = previousschedule.CheckOut;
+                    }
                     DateTime temp = Convert.ToDateTime(schedule.CheckIn);
                     temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
                     schedule.CheckOut = temp.ToString("HH:mm");
