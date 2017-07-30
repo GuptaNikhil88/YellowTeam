@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -614,19 +614,21 @@ namespace WebApplication3.Controllers
                     {
                         continue;
                     }
-                    if (Convert.ToDateTime(schedule.CheckIn) >= Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckIn) < Convert.ToDateTime(s.CheckOut))
+                    else if (Convert.ToDateTime(schedule.CheckIn) >= Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckIn) < Convert.ToDateTime(s.CheckOut))
                     {
-                        if (s.CheckedIn == false)
-                            return true;
-                        else
-                            return false;
+                        return true;
                     }
-                    if (Convert.ToDateTime(schedule.CheckOut) > Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckOut) <= Convert.ToDateTime(s.CheckOut))
+                    else if (Convert.ToDateTime(schedule.CheckOut) > Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckOut) <= Convert.ToDateTime(s.CheckOut))
                     {
-                        if (s.CheckedIn == false)
+                        return true;
+                    }
+                    else{
+                        if((Convert.ToDateTime(schedule.CheckIn)<Convert.ToDateTime(s.CheckIn))&& s.CheckedIn == true){
                             return true;
-                        else
-                            return false;
+                        }
+                        else{
+                            continue;
+                        }
                     }
 
                 }
