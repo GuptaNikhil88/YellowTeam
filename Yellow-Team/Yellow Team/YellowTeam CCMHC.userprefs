@@ -1,7 +1,7 @@
 ﻿<Properties StartupConfiguration="{C2BE13BD-179E-43A4-8C07-AAD2D2BC2F50}|">
   <MonoDevelop.Ide.Workbench ActiveDocument="WebApplication3/Controllers/SchedulesController.cs">
     <Files>
-      <File FileName="WebApplication3/Controllers/SchedulesController.cs" Line="351" Column="115" />
+      <File FileName="WebApplication3/Controllers/SchedulesController.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
@@ -9,6 +9,5 @@
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.ItemProperties.YellowTeam_220CCMHC PreferredExecutionTarget="MonoDevelop.Default" />
   <MultiItemStartupConfigurations />
 </Properties>
