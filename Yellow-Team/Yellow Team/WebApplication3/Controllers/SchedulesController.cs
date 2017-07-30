@@ -348,7 +348,7 @@ namespace WebApplication3.Controllers
             schedule.CheckOut = temp.ToString("HH:mm");
             //schedule.late = 0;
             //TimeScheduling(schedule);
-            var allSchedules = db.Schedules.Where(all => all.created == schedule.created).OrderBy(all => all.Priority);
+            var allSchedules = db.Schedules.Where(all => all.created == schedule.created && all.CheckedIn == false).OrderBy(all => all.Priority);
             if (ModelState.IsValid)
             {
                 if (invalidCheckInAndCheckout(schedule, allSchedules))
@@ -473,7 +473,7 @@ namespace WebApplication3.Controllers
             DateTime temp = Convert.ToDateTime(schedule.CheckIn);
             temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
             schedule.CheckOut = temp.ToString("HH:mm");
-            var allSchedules = db.Schedules.Where(alls => alls.created == schedule.created).OrderBy(all => all.Priority);
+            var allSchedules = db.Schedules.Where(alls => alls.created == schedule.created && alls.CheckedIn == false).OrderBy(all => all.Priority);
 
             if (ModelState.IsValid)
             {
