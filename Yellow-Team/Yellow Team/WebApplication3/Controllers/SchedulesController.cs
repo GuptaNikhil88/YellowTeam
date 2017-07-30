@@ -348,7 +348,7 @@ namespace WebApplication3.Controllers
             schedule.CheckOut = temp.ToString("HH:mm");
             //schedule.late = 0;
             //TimeScheduling(schedule);
-            var allSchedules = db.Schedules.Where(all => all.created == schedule.created && all.CheckedIn == false).OrderBy(all => all.Priority);
+            var allSchedules = db.Schedules.Where(all => all.created == schedule.created).OrderBy(all => all.Priority);
             if (ModelState.IsValid)
             {
                 if (invalidCheckInAndCheckout(schedule, allSchedules))
@@ -473,7 +473,7 @@ namespace WebApplication3.Controllers
             DateTime temp = Convert.ToDateTime(schedule.CheckIn);
             temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
             schedule.CheckOut = temp.ToString("HH:mm");
-            var allSchedules = db.Schedules.Where(alls => alls.created == schedule.created && alls.CheckedIn == false).OrderBy(all => all.Priority);
+            var allSchedules = db.Schedules.Where(alls => alls.created == schedule.created).OrderBy(all => all.Priority);
 
             if (ModelState.IsValid)
             {
@@ -610,18 +610,25 @@ namespace WebApplication3.Controllers
             {
                 foreach (Schedule s in allSchedules)
                 {
-                    if (s.Id == schedule.Id)
-                    {
-                        continue;
-                    }
-                    if (Convert.ToDateTime(schedule.CheckIn) >= Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckIn) < Convert.ToDateTime(s.CheckOut))
-                    {
-                        return true;
-                    }
-                    if (Convert.ToDateTime(schedule.CheckOut) > Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckOut) <= Convert.ToDateTime(s.CheckOut))
-                    {
-                        return true;
-                    }
+                    
+                        if (s.Id == schedule.Id)
+                        {
+                            continue;
+                        }
+                        if (Convert.ToDateTime(schedule.CheckIn) >= Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckIn) < Convert.ToDateTime(s.CheckOut))
+                        {
+	                        if (s.CheckedIn == false)
+	                            return true;
+	                        else
+	                            return false;
+                        }
+                        if (Convert.ToDateTime(schedule.CheckOut) > Convert.ToDateTime(s.CheckIn) & Convert.ToDateTime(schedule.CheckOut) <= Convert.ToDateTime(s.CheckOut))
+                        {
+							if (s.CheckedIn == false)
+								return true;
+							else
+								return false;
+                        }
 
                 }
 
