@@ -1,4 +1,7 @@
-﻿﻿using System;
+﻿//Author﻿: Akash Jain (akashjain1205@gmail.com, jain2ar@mail.uc.edu, github: akash1205)
+//        Nikhil Gupta (nikhil.damoh@gmail.com, guptan6@mail.uc.edu, github: guptanikhil88)
+//      This controller deals with the creating, deletion, updation and manipulation of the schedules.
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -352,7 +355,7 @@ namespace WebApplication3.Controllers
             return View(schedule);
         }
 
-
+        //This method gets called in checkout to support the cascading effect of checkout on the remaining schedules.
         public void TimeScheduling(Schedule schedule)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -374,7 +377,7 @@ namespace WebApplication3.Controllers
             }
         }
 
-
+        //This method gets called in checkout to support the cascading effect of checkout on the remaining schedules.
         public void TimeSchedulingIN(Schedule schedule, Boolean editFlag)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -412,6 +415,7 @@ namespace WebApplication3.Controllers
         }
 
         // GET: Schedules/Edit/5
+        //This method gets the schedule to be edited.
         public static Schedule interim;
         [Authorize(Roles = "Admin")]
         public ActionResult Edit(int? id)
@@ -432,8 +436,7 @@ namespace WebApplication3.Controllers
         }
 
         // POST: Schedules/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //This method saves the changes made to the schedule.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,Length,CheckIn,RoomId")] Schedule schedule)
@@ -463,11 +466,7 @@ namespace WebApplication3.Controllers
                     var Curdate = System.DateTime.Now.ToShortDateString();
                     var trailingSchedule = db.Schedules.Where(up => up.Priority > schedule.Priority & up.created == Curdate);
                     firstCheckin = schedule.CheckOut;
-                    //foreach (Schedule sc in trailingSchedule)
-                    //{
-                    //    TimeSchedulingIN(sc, true);
-                    //}
-
+                    
                     db.SaveChanges();
                     interim = null;
                     return RedirectToAction("Index");
@@ -509,6 +508,7 @@ namespace WebApplication3.Controllers
             return RedirectToAction("Index");
         }
 
+        //This method updates the priorities of the schedules, if any schedule gets deleted.
         public void RefreshPriority(int intrim)
         {
             var Maxp = db.Schedules.Max(mp => mp.Priority);
@@ -531,6 +531,7 @@ namespace WebApplication3.Controllers
             base.Dispose(disposing);
         }
 
+        //This method handles the priority of schedules based on the checkin and checkout time.
         public void sortEditedItems(Schedule schedule, IOrderedQueryable<Schedule> allSchedules)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -576,7 +577,7 @@ namespace WebApplication3.Controllers
             }
         }
 
-
+        //This method doesn't allow user to create overlapping schedules.
         public Boolean invalidCheckInAndCheckout(Schedule schedule, IOrderedQueryable<Schedule> allSchedules)
         {
             if (allSchedules.Count() != 0)
