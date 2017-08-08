@@ -16,16 +16,17 @@ namespace WebApplication3.Controllers
         public static string firstCheckin;
         public static int priority;
         // GET: Schedules
-
+        //This Method is being used to load the schedules of the previous day if no schedules has been created by today.
         public ActionResult Index(int? successFlag)
         {
             DateTime d1 = System.DateTime.Now;
             d1 = d1.AddDays(-1);
             string previousday = d1.ToShortDateString();
             var Curdate = System.DateTime.Now.ToShortDateString();
-            var count = db.Schedules.Where(c => c.created == Curdate).Count();
-            if (count == 0)
+            var countOfSchedules = db.Schedules.Where(c => c.created == Curdate).Count();
+            if (countOfSchedules == 0)
             {
+                //Call to copy the schedules of previous day. 
                 LoadSchedule(previousday);
             }
             var schedules = db.Schedules.Where(s => s.created == Curdate).OrderBy(s => s.Priority);
@@ -35,20 +36,9 @@ namespace WebApplication3.Controllers
             }
             return View(schedules.ToList());
         }
-
-        //public ActionResult Finalize()
-        //{
-        //    var Curdate = System.DateTime.Now.ToShortDateString();
-        //    var schedules = db.Schedules.Where(sc => sc.created == Curdate);
-        //    foreach(Schedule sc in schedules)
-        //    {
-        //    //    sc.ScheduledCheckIn = sc.EstimatedCheckin;
-        //      //  sc.ScheduledCheckout = sc.EstimatedCheckout;
-        //    }
-        //    db.SaveChanges();
-        //    return RedirectToAction("Index", "Schedules");
-        //}
-
+        
+        //This method gets called in the Index() Method above to load the schedules of the previous day. The created date, checkedIn
+        // and checkedout status, completed flag will be refreshed.
         public void LoadSchedule(string pd)
         {
             string previousday = pd;
@@ -62,12 +52,9 @@ namespace WebApplication3.Controllers
                 var NewSchedule = new Schedule();
                 NewSchedule.Id = scheduleid;
                 NewSchedule.Length = ps.Length;
-                //  NewSchedule.Parent = false;
                 NewSchedule.Priority = ps.Priority;
                 NewSchedule.room = ps.room;
                 NewSchedule.RoomId = ps.RoomId;
-                //NewSchedule.EstimatedCheckin = ps.EstimatedCheckin;
-                //NewSchedule.EstimatedCheckout = ps.EstimatedCheckout;
                 NewSchedule.CheckIn = ps.CheckIn;
                 NewSchedule.CheckOut = ps.CheckOut;
                 NewSchedule.CheckedIn = false;
@@ -79,28 +66,16 @@ namespace WebApplication3.Controllers
 
             }
             db.SaveChanges();
-            //updateschedule();
         }
 
-
-        public void updateschedule()
-        {
-            var Curdate = System.DateTime.Now.ToShortDateString();
-            var schedules = db.Schedules.Where(s => s.created == Curdate);
-            foreach (Schedule s in schedules)
-            {
-                TimeScheduling(s);
-                db.Entry(s).State = EntityState.Modified;
-            }
-            db.SaveChanges();
-        }
-
-
+        //This method is used to checkin the schedules. It updated the checkin and checkout time of the schedule and also
+        //cascades the change to the remaning schedules.
         public ActionResult CheckIn(int? id)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
             var schedule = db.Schedules.Single(s => s.Id == id);
             var success = 0;
+            //This condition validates whether previous schedule has been checked out or not.
             if (validatePreviousCheckin(schedule))
             {
                 success = 1;
@@ -112,6 +87,7 @@ namespace WebApplication3.Controllers
                                               .OrderBy(up => up.Priority);
                 foreach (Schedule up in updateschedule)
                 {
+                    //This call cascades the effect of checkIn to update the checkout and checkin time of the remaining schedules.
                     TimeSchedulingIN(up, false);
                 }
                 db.SaveChanges();
@@ -125,6 +101,8 @@ namespace WebApplication3.Controllers
             return RedirectToAction("Index", new { successFlag = success });
         }
 
+        //This method return True if the previous schedule has been checked out. If it is not checked out but has been checked in,
+        //it checks out the previous schedule and returns true. If the previous schedule is not checked in, it returns false.
         public Boolean validatePreviousCheckin(Schedule schedule)
         {
             var curDate = System.DateTime.Now.ToShortDateString();
@@ -144,13 +122,15 @@ namespace WebApplication3.Controllers
                     return true;
                 }
             }
-            if (schedule.Priority == 1)
+            else if (schedule.Priority == 1)
             {
                 return true;
             }
             return false;
         }
 
+        //This method is used to checkin the schedules. It updated the checkin and checkout time of the schedule and also
+        //cascades the change to the remaning schedules.
         public ActionResult CheckOut(int? id)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -163,9 +143,6 @@ namespace WebApplication3.Controllers
             DateTime temp1 = Convert.ToDateTime(schedule.CheckIn);
             TimeSpan length = temp.Subtract(temp1);
             schedule.Length = int.Parse(length.TotalMinutes.ToString());
-            //schedule.late = span.Minutes;
-            //temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
-            //schedule.EstimatedCheckout = temp.ToShortTimeString();
             db.Entry(schedule).State = EntityState.Modified;
             db.SaveChanges();
             var updateschedule = db.Schedules.Where(up => up.Priority > schedule.Priority && up.created == Curdate);
@@ -177,7 +154,8 @@ namespace WebApplication3.Controllers
             return RedirectToAction("Index");
         }
 
-
+        //This method clears out the details of the schedules.
+        //Only admin can access this method.
         [Authorize(Roles = "Admin")]
         public ActionResult Clear(int? id)
         {
@@ -191,7 +169,8 @@ namespace WebApplication3.Controllers
             return RedirectToAction("Index");
         }
 
-
+        //This method change the priority of the schedule by moving it up the ladder and updates the remaming schedules accordingly.
+        //Only Admin can assess this method.
         [Authorize(Roles = "Admin")]
         public ActionResult Moveup(int? id)
         {
@@ -226,7 +205,8 @@ namespace WebApplication3.Controllers
             return RedirectToAction("Index");
         }
 
-
+        //This method change the priority of the schedule by moving it down the ladder and updates the remaming schedules accordingly.
+        //Only Admin can assess this method.
         [Authorize(Roles = "Admin")]
         public ActionResult MoveDown(int? id)
         {
@@ -265,9 +245,9 @@ namespace WebApplication3.Controllers
             }
             return RedirectToAction("Index");
         }
+
         // GET: Schedules/Details/5
-
-
+        //This method is used to see the details of the schedule.
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -282,6 +262,9 @@ namespace WebApplication3.Controllers
             return View(schedule);
         }
         public static string maxCheckout;
+        
+        //This method initializes a new schedule. If it is the first schedule, the default time will be 9:00 AM, which is editable.
+        //If the schedule is not the first schedule, it takes the checkout time of the previous schedule.
         // GET: Schedules/Create
         [Authorize(Roles = "Admin")]
         public ActionResult Create()
@@ -291,7 +274,7 @@ namespace WebApplication3.Controllers
             var schedules = db.Schedules.Where(sc => sc.created == Curdate);
             List<Rooms> rooms = db.Rooms.OrderBy(rm => rm.Room_Number).ToList();
             int countHit = 0;
-            // int id = 0;
+            
             List<Rooms> finalRooms = new List<Rooms>();
 
             foreach (Rooms rm in rooms)
@@ -332,8 +315,7 @@ namespace WebApplication3.Controllers
         }
 
         // POST: Schedules/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        //This method saves the details of the schedule in the database.
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
@@ -347,8 +329,7 @@ namespace WebApplication3.Controllers
             DateTime temp = Convert.ToDateTime(schedule.CheckIn);
             temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
             schedule.CheckOut = temp.ToString("HH:mm");
-            //schedule.late = 0;
-            //TimeScheduling(schedule);
+          
             var allSchedules = db.Schedules.Where(all => all.created == schedule.created).OrderBy(all => all.Priority);
             if (ModelState.IsValid)
             {
@@ -371,6 +352,7 @@ namespace WebApplication3.Controllers
             return View(schedule);
         }
 
+
         public void TimeScheduling(Schedule schedule)
         {
             var Curdate = System.DateTime.Now.ToShortDateString();
@@ -383,24 +365,11 @@ namespace WebApplication3.Controllers
                 else
                 {
                     var tempschedule = db.Schedules.Single(ts => ts.Priority == schedule.Priority - 1 && ts.created == Curdate);
-                    //if (tempschedule.CheckOut == null)
-                    //{
-                    //    schedule.CheckIn = tempschedule.EstimatedCheckout;
-                    //}
-                    //else
-                    //{
-                    //    schedule.EstimatedCheckin = tempschedule.CheckOut;
-                    //}
                     schedule.CheckIn = tempschedule.CheckOut;
                 }
                 DateTime temp = Convert.ToDateTime(schedule.CheckIn);
                 temp = temp.AddMinutes(Convert.ToInt32(schedule.Length));
                 schedule.CheckOut = temp.ToString("HH:mm");
-                //DateTime temp1 = Convert.ToDateTime(schedule.ScheduledCheckout);
-                //DateTime temp2 = Convert.ToDateTime(schedule.EstimatedCheckout);
-                //TimeSpan span = temp2.Subtract(temp1);
-                //schedule.late = span.Minutes;
-                //db.SaveChanges();
                 priority = 0;
             }
         }
