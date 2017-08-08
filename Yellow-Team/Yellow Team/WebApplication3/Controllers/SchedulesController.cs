@@ -148,7 +148,8 @@ namespace WebApplication3.Controllers
             schedule.Length = int.Parse(length.TotalMinutes.ToString());
             db.Entry(schedule).State = EntityState.Modified;
             db.SaveChanges();
-            var updateschedule = db.Schedules.Where(up => up.Priority > schedule.Priority && up.created == Curdate);
+            var updateschedule = db.Schedules.Where(up => up.Priority > schedule.Priority && up.created == Curdate)
+                                                .OrderBy(up=>up.Priority);
             foreach (Schedule up in updateschedule)
             {
                 TimeScheduling(up);
