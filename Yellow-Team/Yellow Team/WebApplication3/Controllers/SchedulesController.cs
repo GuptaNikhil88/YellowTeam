@@ -24,8 +24,8 @@ namespace WebApplication3.Controllers
         {
             DateTime d1 = System.DateTime.Now;
             d1 = d1.AddDays(-1);
-            string previousday = d1.ToShortDateString();
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            string previousday = d1.ToString("MM-dd-yyyy");
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
             var countOfSchedules = db.Schedules.Where(c => c.created == Curdate).Count();
             if (countOfSchedules == 0)
             {
@@ -62,7 +62,7 @@ namespace WebApplication3.Controllers
                 NewSchedule.CheckOut = ps.CheckOut;
                 NewSchedule.CheckedIn = false;
                 NewSchedule.completed = 0;
-                NewSchedule.created = System.DateTime.Now.ToShortDateString();
+                NewSchedule.created = System.DateTime.Now.ToString("MM-dd-yyyy");
 
                 scheduleid = ++scheduleid;
                 db.Schedules.Add(NewSchedule);
@@ -75,14 +75,14 @@ namespace WebApplication3.Controllers
         //cascades the change to the remaning schedules.
         public ActionResult CheckIn(int? id)
         {
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
             var schedule = db.Schedules.Single(s => s.Id == id);
             var success = 0;
             //This condition validates whether previous schedule has been checked out or not.
             if (validatePreviousCheckin(schedule))
             {
                 success = 1;
-                schedule.CheckIn = System.DateTime.Now.ToShortTimeString();
+                schedule.CheckIn = System.DateTime.Now.ToString("HH:mm");
                 schedule.CheckedIn = true;
                 db.Entry(schedule).State = EntityState.Modified;
                 db.SaveChanges();
@@ -108,7 +108,7 @@ namespace WebApplication3.Controllers
         //it checks out the previous schedule and returns true. If the previous schedule is not checked in, it returns false.
         public Boolean validatePreviousCheckin(Schedule schedule)
         {
-            var curDate = System.DateTime.Now.ToShortDateString();
+            var curDate = System.DateTime.Now.ToString("MM-dd-yyyy");
             if (schedule.Priority > 1)
             {
                 var previousSchedule = db.Schedules.Single(ps => ps.Priority == schedule.Priority - 1 & ps.created == curDate);
@@ -116,7 +116,7 @@ namespace WebApplication3.Controllers
                 {
                     if (previousSchedule.completed == 0)
                     {
-                        previousSchedule.CheckOut = System.DateTime.Now.ToShortTimeString();
+                        previousSchedule.CheckOut = System.DateTime.Now.ToString("HH:mm");
                         previousSchedule.Length = int.Parse((Convert.ToDateTime(previousSchedule.CheckOut).Subtract(Convert.ToDateTime(previousSchedule.CheckIn))).TotalMinutes.ToString());
                         previousSchedule.completed = 1;
                         db.Entry(previousSchedule).State = EntityState.Modified;
@@ -136,10 +136,10 @@ namespace WebApplication3.Controllers
         //cascades the change to the remaning schedules.
         public ActionResult CheckOut(int? id)
         {
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
 
             var schedule = db.Schedules.Single(s => s.Id == id);
-            schedule.CheckOut = System.DateTime.Now.ToShortTimeString();
+            schedule.CheckOut = System.DateTime.Now.ToString("HH:mm");
             schedule.completed = 1;
 
             DateTime temp = Convert.ToDateTime(schedule.CheckOut);
@@ -178,7 +178,7 @@ namespace WebApplication3.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult Moveup(int? id)
         {
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
             var schedule = db.Schedules.Single(s => s.Id == id);
             if (schedule.Priority != 1)
             {
@@ -214,7 +214,7 @@ namespace WebApplication3.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult MoveDown(int? id)
         {
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
             var schedule = db.Schedules.Single(s => s.Id == id);
             var todaysSchedules = db.Schedules.Where(s => s.created == Curdate);
             var maxpriority = todaysSchedules.Max(mp => mp.Priority);
@@ -274,7 +274,7 @@ namespace WebApplication3.Controllers
         public ActionResult Create()
         {
             Schedule scheduleNew = new Schedule();
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
             var schedules = db.Schedules.Where(sc => sc.created == Curdate);
             List<Rooms> rooms = db.Rooms.OrderBy(rm => rm.Room_Number).ToList();
             int countHit = 0;
@@ -326,7 +326,7 @@ namespace WebApplication3.Controllers
         public ActionResult Create([Bind(Include = "Id,Length,CheckIn,RoomId")] Schedule schedule)
         {
 
-            schedule.created = System.DateTime.Now.ToShortDateString();
+            schedule.created = System.DateTime.Now.ToString("MM-dd-yyyy");
             schedule.completed = 0;
             schedule.Priority = priority;
             schedule.CheckedIn = false;
@@ -359,7 +359,7 @@ namespace WebApplication3.Controllers
         //This method gets called in checkout to support the cascading effect of checkout on the remaining schedules.
         public void TimeScheduling(Schedule schedule)
         {
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
             if (schedule.completed == 0)
             {
                 if (schedule.Priority == 1)
@@ -381,7 +381,7 @@ namespace WebApplication3.Controllers
         //This method gets called in checkout to support the cascading effect of checkout on the remaining schedules.
         public void TimeSchedulingIN(Schedule schedule, Boolean editFlag)
         {
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
             if (schedule.completed == 0 && editFlag == false)
             {
                 if (schedule.CheckedIn == true)
@@ -464,7 +464,7 @@ namespace WebApplication3.Controllers
                 {
                     sortEditedItems(schedule, allSchedules);
                     db.SaveChanges();
-                    var Curdate = System.DateTime.Now.ToShortDateString();
+                    var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
                     var trailingSchedule = db.Schedules.Where(up => up.Priority > schedule.Priority & up.created == Curdate);
                     firstCheckin = schedule.CheckOut;
                     
@@ -535,7 +535,7 @@ namespace WebApplication3.Controllers
         //This method handles the priority of schedules based on the checkin and checkout time.
         public void sortEditedItems(Schedule schedule, IOrderedQueryable<Schedule> allSchedules)
         {
-            var Curdate = System.DateTime.Now.ToShortDateString();
+            var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
             if (allSchedules.Count() != 0)
             {
                 foreach (Schedule s in allSchedules)
