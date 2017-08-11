@@ -36,7 +36,11 @@ namespace WebApplication3.Controllers
             if (successFlag == 0)
             {
                 ViewBag.message = "The previous schedule is not checked in yet!";
+            }else if (successFlag == 2)
+            {
+                ViewBag.message = "Schedule can not have the same CheckIn and CheckOut time i.e Schedule interval must be greater than zero.";
             }
+
             return View(schedules.ToList());
         }
         
@@ -79,7 +83,7 @@ namespace WebApplication3.Controllers
             var schedule = db.Schedules.Single(s => s.Id == id);
             var success = 0;
             //This condition validates whether previous schedule has been checked out or not.
-            if (validatePreviousCheckin(schedule))
+            if (validatePreviousCheckin(schedule) == "Success")
             {
                 success = 1;
                 schedule.CheckIn = System.DateTime.Now.ToString("HH:mm");
@@ -97,16 +101,20 @@ namespace WebApplication3.Controllers
 
 
             }
-            else
+            else if(validatePreviousCheckin(schedule)== "Checkin Error")
             {
                 success = 0;
+            }
+            else
+            {
+                success = 2;
             }
             return RedirectToAction("Index", new { successFlag = success });
         }
 
         //This method return True if the previous schedule has been checked out. If it is not checked out but has been checked in,
         //it checks out the previous schedule and returns true. If the previous schedule is not checked in, it returns false.
-        public Boolean validatePreviousCheckin(Schedule schedule)
+        public String validatePreviousCheckin(Schedule schedule)
         {
             var curDate = System.DateTime.Now.ToString("MM-dd-yyyy");
             if (schedule.Priority > 1)
@@ -119,23 +127,30 @@ namespace WebApplication3.Controllers
                         previousSchedule.CheckOut = System.DateTime.Now.ToString("HH:mm");
                         previousSchedule.Length = int.Parse((Convert.ToDateTime(previousSchedule.CheckOut).Subtract(Convert.ToDateTime(previousSchedule.CheckIn))).TotalMinutes.ToString());
                         previousSchedule.completed = 1;
-                        db.Entry(previousSchedule).State = EntityState.Modified;
-                        db.SaveChanges();
+                        if (previousSchedule.Length >= 1)
+                        {
+                            db.Entry(previousSchedule).State = EntityState.Modified;
+                            db.SaveChanges();
+                        }else
+                        {
+                            return "Checkout Error";
+                        }
                     }
-                    return true;
+                    return "Success";
                 }
             }
             else if (schedule.Priority == 1)
             {
-                return true;
+                return "Success";
             }
-            return false;
+            return "Checkin Error";
         }
 
         //This method is used to checkin the schedules. It updated the checkin and checkout time of the schedule and also
         //cascades the change to the remaning schedules.
         public ActionResult CheckOut(int? id)
         {
+            var success =1;
             var Curdate = System.DateTime.Now.ToString("MM-dd-yyyy");
 
             var schedule = db.Schedules.Single(s => s.Id == id);
@@ -146,16 +161,23 @@ namespace WebApplication3.Controllers
             DateTime temp1 = Convert.ToDateTime(schedule.CheckIn);
             TimeSpan length = temp.Subtract(temp1);
             schedule.Length = int.Parse(length.TotalMinutes.ToString());
-            db.Entry(schedule).State = EntityState.Modified;
-            db.SaveChanges();
-            var updateschedule = db.Schedules.Where(up => up.Priority > schedule.Priority && up.created == Curdate)
-                                                .OrderBy(up=>up.Priority);
-            foreach (Schedule up in updateschedule)
+            if (schedule.Length > 0) { 
+                db.Entry(schedule).State = EntityState.Modified;
+                db.SaveChanges();
+                var updateschedule = db.Schedules.Where(up => up.Priority > schedule.Priority && up.created == Curdate)
+                                                    .OrderBy(up=>up.Priority);
+                foreach (Schedule up in updateschedule)
+                {
+                    TimeScheduling(up);
+                }
+                db.SaveChanges();
+                    success = 1; 
+            }else
             {
-                TimeScheduling(up);
+                success = 2;
             }
-            db.SaveChanges();
-            return RedirectToAction("Index");
+
+            return RedirectToAction("Index",new { successFlag = success});
         }
 
         //This method clears out the details of the schedules.
