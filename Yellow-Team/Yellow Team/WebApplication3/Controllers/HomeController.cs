@@ -1,4 +1,7 @@
-﻿using System;
+﻿//Author﻿: Akash Jain (akashjain1205@gmail.com, jain2ar@mail.uc.edu, github: akash1205)
+//        Nikhil Gupta (nikhil.damoh@gmail.com, guptan6@mail.uc.edu, github: guptanikhil88)
+//      This controller handles the landing of user on the application.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;

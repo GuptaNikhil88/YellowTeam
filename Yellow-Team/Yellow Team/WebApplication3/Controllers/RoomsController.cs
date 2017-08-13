@@ -1,4 +1,8 @@
-﻿using System;
+﻿//Author﻿: Akash Jain (akashjain1205@gmail.com, jain2ar@mail.uc.edu, github: akash1205)
+//        Nikhil Gupta (nikhil.damoh@gmail.com, guptan6@mail.uc.edu, github: guptanikhil88)
+//      This controller deals with the creating, deletion and updation of the rooms.
+//      This controller can only be accessed by admin. Id: admin@cchmc.com; pass: Yellow
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;

@@ -30,8 +30,6 @@ namespace WebApplication3.Models
             return new ApplicationDbContext();
         }
 
-        public System.Data.Entity.DbSet<WebApplication3.Models.Test1> Test1 { get; set; }
-
         public System.Data.Entity.DbSet<WebApplication3.Models.Rooms> Rooms { get; set; }
 
         public System.Data.Entity.DbSet<WebApplication3.Models.Occupancy> Occupancies { get; set; }

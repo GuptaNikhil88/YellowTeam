@@ -1,4 +1,8 @@
-﻿using System;
+﻿//Author﻿: Akash Jain (akashjain1205@gmail.com, jain2ar@mail.uc.edu, github: akash1205)
+//        Nikhil Gupta (nikhil.damoh@gmail.com, guptan6@mail.uc.edu, github: guptanikhil88)
+//      This controller is used to handle user data. This is not being used currently as it is beyond the scope of the project due to 
+//      compliance issues.
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
